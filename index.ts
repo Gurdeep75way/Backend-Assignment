@@ -15,6 +15,7 @@ import errorHandler from "./app/common/middleware/error-handler.middleware";
 import routes from "./app/routes";
 import { configDotenv } from "dotenv";
 import { swaggerSetup } from "./app/common/services/config/swagger.config";
+import rateLimit from "express-rate-limit";
 
 // Load environment variables
 configDotenv();
@@ -61,7 +62,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
-
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { message: "Too many requests, please try again later." },
+  headers: true, // Adds RateLimit headers to responses
+});
+app.use(apiLimiter);
 /**
  * Initializes the application.
  * @async

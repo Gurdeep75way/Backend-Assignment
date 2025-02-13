@@ -3,6 +3,7 @@ import { catchError } from "../common/middleware/cath-error.middleware";
 import * as userController from "./user.controller";
 import * as userValidator from "./user.validation";
 import { verifyToken } from "../common/middleware/role-auth.middleware";
+import { refreshToken } from "./user.controller";
 
 const router = Router();
 
@@ -55,6 +56,8 @@ router.post("/register", userValidator.createUser, catchError, userController.cr
  *         description: Unauthorized
  */
 router.get("/profile", verifyToken, userController.getUserById);
+
+
 
 /**
  * @swagger
@@ -148,5 +151,40 @@ router.patch("/profile", verifyToken, userValidator.editUser, catchError, userCo
  *         description: Unauthorized
  */
 router.post("/login", userController.loginUser);
+
+/**
+ * @swagger
+ * /refresh-token:
+ *   post:
+ *     summary: Refresh the access token
+ *     description: Generate a new access token using a valid refresh token.
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: The refresh token.
+ *     responses:
+ *       200:
+ *         description: Successfully refreshed the access token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: The new access token.
+ *       403:
+ *         description: Invalid or expired refresh token.
+ */
+router.post("/refresh-token", refreshToken);
+
 
 export default router;

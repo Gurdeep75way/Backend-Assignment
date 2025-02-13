@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "./user.service";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "./user.service";
+let refreshTokens: string[] = []; // Global scope
 
 /**
  * Register a new user
@@ -150,4 +152,24 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     } catch (error) {
         next(error);
     }
+};
+
+export const refreshToken = (req: Request, res: Response) => {
+    const { token } = req.body;
+    if (!token || !refreshTokens.includes(token)) return res.status(403).json({ message: "Forbidden" });
+
+    try {
+        const decoded: any = verifyRefreshToken(token);
+        const accessToken = generateAccessToken({ _id: decoded.id });
+
+        res.json({ accessToken });
+    } catch (err) {
+        res.status(403).json({ message: "Invalid refresh token" });
+    }
+};
+
+export const logout = (req: Request, res: Response) => {
+    const { token } = req.body;
+    refreshTokens = refreshTokens.filter(t => t !== token);
+    res.json({ message: "Logged out" });
 };
